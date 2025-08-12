@@ -2,9 +2,12 @@
   "compilerOptions": {
     "types": ["mocha", "chai"],
     "typeRoots": ["./node_modules/@types"],
-    "lib": ["es2015"],
-    "module": "commonjs",
-    "target": "es6",
-    "esModuleInterop": true
+    "lib": ["es2022"], // Use a more modern ES version
+    "module": "nodenext",
+    "target": "es2022", // Align target with lib
+    "esModuleInterop": true,
+    "moduleResolution": "nodenext", // Explicitly set module resolution
+    "skipLibCheck": true, // Can help avoid unrelated type errors
+    "resolveJsonModule": true // Good practice
   }
 }

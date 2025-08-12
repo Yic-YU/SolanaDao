@@ -3,8 +3,8 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Program } from "@coral-xyz/anchor";
 // 确保导入与您项目编译后类型文件一致
-import { DaoProgram } from "../target/types/dao_program";
-import { PublicKey, SystemProgram } from "@solana/web3.js";
+import { DaoProgram } from "../target/types/dao_program.js";
+import { PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 
 async function main() {
     // 1. 设置客户端，它会自动读取 Anchor.toml 中的配置
@@ -13,34 +13,48 @@ async function main() {
     const program = anchor.workspace.DaoProgram as Program<DaoProgram>;
 
     // 2. 定义将要与指令交互的账户
-    // provider.wallet.payer 就是您在 Anchor.toml 中配置的钱包
     const admin = provider.wallet.payer; 
-    const developerWallet = provider.wallet.payer; // 这里我们暂时用同一个钱包作为开发者钱包
+    const developerWallet = provider.wallet.payer;
 
-    console.log("--- 初始化脚本 ---");
+    console.log("--- 初始化脚本 (完全手动模式) ---");
     console.log("程序 ID:", program.programId.toBase58());
     console.log("脚本执行者 (Admin):", admin.publicKey.toBase58());
 
     // 3. 计算 Config PDA 的地址
-    // 这个 PDA 是全局唯一的，种子是 "config"
     const [configPDA] = PublicKey.findProgramAddressSync(
         [Buffer.from("config")],
         program.programId
     );
     console.log("将要初始化的 Config PDA 地址:", configPDA.toBase58());
 
-    // 4. 发送交易来调用 initializeConfig 指令
-    console.log("\n正在发送交易以初始化 Config 账户...");
+    // 4. 完全手动构建指令和交易
+    console.log("\n正在构建交易以初始化 Config 账户...");
     try {
-        const txSignature = await program.methods
-            .initializeConfig(developerWallet.publicKey)
-            .accounts({
-                // 这里的账户名称必须与 Rust 指令上下文中的名称完全匹配
-                admin: admin.publicKey,
-                config: configPDA,
-                systemProgram: SystemProgram.programId,
-            })
-            .rpc(); // .rpc() 会发送交易并等待确认
+        // 手动定义账户列表，顺序必须与 Rust 指令中的 Accounts 结构体完全一致
+        const keys = [
+            { pubkey: admin.publicKey, isSigner: true, isWritable: true },      // admin
+            { pubkey: configPDA, isSigner: false, isWritable: true },           // config
+            { pubkey: SystemProgram.programId, isSigner: false, isWritable: false } // system_program
+        ];
+
+        // 使用 coder 来编码指令数据，避免处理辨别符
+        const data = program.coder.instruction.encode("initializeConfig", {
+            developerWallet: developerWallet.publicKey,
+        });
+
+        // 创建指令
+        const instruction = new TransactionInstruction({
+            keys: keys,
+            programId: program.programId,
+            data: data,
+        });
+
+        // 创建一个新的交易
+        const transaction = new Transaction().add(instruction);
+
+        // 发送交易
+        console.log("正在发送交易...");
+        const txSignature = await provider.sendAndConfirm(transaction, [admin]);
 
         console.log("✅ Config 初始化成功！");
         console.log("交易签名 (Transaction Signature):", txSignature);
@@ -48,7 +62,6 @@ async function main() {
 
     } catch (error) {
         console.error("❌ Config 初始化失败:", error.toString());
-        // 检查是否是因为账户已存在而失败，这是一个常见且无害的错误
         if (error.toString().includes("already in use") || error.toString().includes("custom program error: 0x0")) {
             console.log("提示：Config 账户可能已经存在，无需再次初始化。");
         }
