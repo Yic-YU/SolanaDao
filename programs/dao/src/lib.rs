@@ -8,7 +8,7 @@ pub mod state;
 pub mod config;
 pub mod event;
 
-declare_id!("Adk4apJPPBsC4wcLFRJjYFAgU6J5pjfk9djsFkuauqj1");
+declare_id!("3LDehVNaAgFqvjo1cPg96j8tKUReLrpsKpW321fb8uyR");
 use instructions::*;
 use crate::state::ProposalType;
 use crate::instructions::staker_proposal::VoteChoice;
