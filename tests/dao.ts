@@ -238,18 +238,30 @@ describe("dao_program", () => {
                 // 提案类型：从国库提款
                 const proposalType = { withdrawTreasury: { amount: withdrawAmount, recipient: recipient.publicKey } };
 
-                // 1. 发起提案 (create_stake_proposal)
+                // 1. 发起提案 (mul_create_propose) - 多签者发起
                 const [stakeAccountPDA] = await PublicKey.findProgramAddress([Buffer.from("stake_account"), daoStatePDA.toBuffer(), stakerA.publicKey.toBuffer()], program.programId);
-                await program.methods.createStakeProposal(proposalId, "提款提案", "为贡献者发奖金", proposalType).accounts({
-                    proposer: stakerA.publicKey,
+                await program.methods.mulCreatePropose(proposalId, proposalType, "提款提案", "为贡献者发奖金").accounts({
                     daoState: daoStatePDA,
-                    stakeAccount: stakeAccountPDA,
                     proposal: proposalPDA,
+                    proposer: authority.publicKey,
+                    authority: authority.publicKey,
                     systemProgram: SystemProgram.programId,
-                }).signers([stakerA]).rpc();
+                }).signers([authority]).rpc();
 
                 let proposalAccount = await program.account.proposal.fetch(proposalPDA);
-                assert.ok(proposalAccount.proposer.equals(stakerA.publicKey), "提案发起人不正确");
+                assert.ok(proposalAccount.proposer.equals(authority.publicKey), "提案发起人不正确");
+
+                // 1.5. 多签批准提案 (mul_approve_propose)
+                await program.methods.mulApprovePropose().accounts({
+                    daoState: daoStatePDA,
+                    proposal: proposalPDA,
+                    approver: authority.publicKey,
+                    authority: authority.publicKey,
+                }).signers([authority]).rpc();
+
+                // 检查提案是否已批准
+                proposalAccount = await program.account.proposal.fetch(proposalPDA);
+                assert.ok(proposalAccount.approvedAt !== null, "提案应该被批准");
 
                 // 2. 投票 (vote)
                 // stakerA 投赞成票
@@ -280,23 +292,23 @@ describe("dao_program", () => {
                 assert.equal(proposalAccount.noVotes.toString(), "300000000000", "反对票数不正确");
                 assert.equal(proposalAccount.voterCount, 2, "投票人数不正确");
 
-                // 3. 等待投票期结束并执行提案 (execute_stake_proposal)
-                console.log("    等待投票期 (5秒) 结束...");
+                // 3. 等待投票期结束并执行提案 (execute_proposal)
+                console.log("    等待投票期 (7秒) 结束...");
                 await new Promise(resolve => setTimeout(resolve, 10 * 1000));
 
                 const recipientInitialBalance = await connection.getBalance(recipient.publicKey);
                 //  对于非定期支付提案，也需要传入一个虚拟的 recurring_payment PDA
                 const [dummyPaymentPDA] = await PublicKey.findProgramAddress([Buffer.from("payment"), daoStatePDA.toBuffer(), recipient.publicKey.toBuffer()], program.programId);
 
-                await program.methods.executeStakeProposal().accounts({
-                    executor: stakerA.publicKey,
+                await program.methods.executeProposal().accounts({
                     daoState: daoStatePDA,
                     proposal: proposalPDA,
+                    authority: daoStatePDA,
                     treasury: treasuryPDA,
                     recurringPayment: dummyPaymentPDA,
                     recipient: recipient.publicKey,
                     systemProgram: SystemProgram.programId,
-                }).signers([stakerA]).rpc();
+                }).rpc();
 
                 proposalAccount = await program.account.proposal.fetch(proposalPDA);
                 assert.isTrue(proposalAccount.executed, "提案应被执行");
@@ -316,28 +328,50 @@ describe("dao_program", () => {
 
                 // 1. 发起提案
                 const [stakeAccountPDA] = await PublicKey.findProgramAddress([Buffer.from("stake_account"), daoStatePDA.toBuffer(), stakerA.publicKey.toBuffer()], program.programId);
-                await program.methods.createStakeProposal(proposalId, "添加新Signer", "邀请核心成员加入", proposalType).accounts({
-                    proposer: stakerA.publicKey, daoState: daoStatePDA, stakeAccount: stakeAccountPDA, proposal: proposalPDA, systemProgram: SystemProgram.programId,
+                await program.methods.mulCreatePropose(proposalId, proposalType, "添加新Signer", "邀请核心成员加入").accounts({
+                    daoState: daoStatePDA, 
+                    proposal: proposalPDA, 
+                    proposer: stakerA.publicKey, 
+                    authority: authority.publicKey, 
+                    systemProgram: SystemProgram.programId,
+                }).signers([stakerA]).rpc();
+
+                // 1.5. 多签批准提案
+                await program.methods.mulApprovePropose().accounts({
+                    daoState: daoStatePDA,
+                    proposal: proposalPDA,
+                    approver: stakerA.publicKey,
+                    authority: authority.publicKey,
                 }).signers([stakerA]).rpc();
 
                 // 2. 投票 (这次只有StakerA投票，权重70% > 60%，应该能通过)
                 const [voteRecordAPDA] = await PublicKey.findProgramAddress([Buffer.from("vote_record"), proposalPDA.toBuffer(), stakerA.publicKey.toBuffer()], program.programId);
                 await program.methods.vote({ yes: {} }).accounts({
-                    voter: stakerA.publicKey, stakeAccount: stakeAccountPDA, daoState: daoStatePDA, proposal: proposalPDA, voteRecord: voteRecordAPDA, systemProgram: SystemProgram.programId,
+                    voter: stakerA.publicKey, 
+                    stakeAccount: stakeAccountPDA, 
+                    daoState: daoStatePDA, 
+                    proposal: proposalPDA, 
+                    voteRecord: voteRecordAPDA, 
+                    systemProgram: SystemProgram.programId,
                 }).signers([stakerA]).rpc();
 
                 // 3. 等待并执行
-                console.log("    等待投票期 (5秒) 结束...");
+                console.log("    等待投票期 (7秒) 结束...");
                 await new Promise(resolve => setTimeout(resolve, 6 * 1000));
 
                 // 执行时需要提供一些虚拟账户，因为指令上下文是统一的
                 const dummyRecipient = Keypair.generate();
                 const [dummyPaymentPDA] = await PublicKey.findProgramAddress([Buffer.from("payment"), daoStatePDA.toBuffer(), dummyRecipient.publicKey.toBuffer()], program.programId);
 
-                await program.methods.executeStakeProposal().accounts({
-                    executor: stakerA.publicKey, daoState: daoStatePDA, proposal: proposalPDA, treasury: treasuryPDA,
-                    recurringPayment: dummyPaymentPDA, recipient: dummyRecipient.publicKey, systemProgram: SystemProgram.programId,
-                }).signers([stakerA]).rpc();
+                await program.methods.executeProposal().accounts({
+                    daoState: daoStatePDA, 
+                    proposal: proposalPDA, 
+                    authority: daoStatePDA,
+                    treasury: treasuryPDA,
+                    recurringPayment: dummyPaymentPDA, 
+                    recipient: dummyRecipient.publicKey, 
+                    systemProgram: SystemProgram.programId,
+                }).rpc();
 
                 const daoState = await program.account.daoState.fetch(daoStatePDA);
                 assert.equal(daoState.signer.length, 2, "签名者数量应为2");
@@ -371,23 +405,46 @@ describe("dao_program", () => {
 
                 // 1. 发起提案
                 const [stakeAccountPDA] = await PublicKey.findProgramAddress([Buffer.from("stake_account"), daoStatePDA.toBuffer(), stakerA.publicKey.toBuffer()], program.programId);
-                await program.methods.createStakeProposal(proposalId, "定期支付提案", "每月给开发者发工资", proposalType).accounts({
-                    proposer: stakerA.publicKey, daoState: daoStatePDA, stakeAccount: stakeAccountPDA, proposal: proposalPDA, systemProgram: SystemProgram.programId,
+                await program.methods.mulCreatePropose(proposalId, proposalType, "定期支付提案", "为开发者提供持续支持").accounts({
+                    daoState: daoStatePDA, 
+                    proposal: proposalPDA, 
+                    proposer: stakerA.publicKey, 
+                    authority: authority.publicKey, 
+                    systemProgram: SystemProgram.programId,
+                }).signers([stakerA]).rpc();
+
+                // 1.5. 多签批准提案
+                await program.methods.mulApprovePropose().accounts({
+                    daoState: daoStatePDA,
+                    proposal: proposalPDA,
+                    approver: stakerA.publicKey,
+                    authority: authority.publicKey,
                 }).signers([stakerA]).rpc();
 
                 // 2. 投票
                 const [voteRecordAPDA] = await PublicKey.findProgramAddress([Buffer.from("vote_record"), proposalPDA.toBuffer(), stakerA.publicKey.toBuffer()], program.programId);
                 await program.methods.vote({ yes: {} }).accounts({
-                    voter: stakerA.publicKey, stakeAccount: stakeAccountPDA, daoState: daoStatePDA, proposal: proposalPDA, voteRecord: voteRecordAPDA, systemProgram: SystemProgram.programId,
+                    voter: stakerA.publicKey, 
+                    stakeAccount: stakeAccountPDA, 
+                    daoState: daoStatePDA, 
+                    proposal: proposalPDA, 
+                    voteRecord: voteRecordAPDA, 
+                    systemProgram: SystemProgram.programId,
                 }).signers([stakerA]).rpc();
 
                 // 3. 等待并执行
-                console.log("    等待投票期 (5秒) 结束...");
+                console.log("    等待投票期 (7秒) 结束...");
                 await new Promise(resolve => setTimeout(resolve, 6 * 1000));
-                await program.methods.executeStakeProposal().accounts({
-                    executor: stakerA.publicKey, daoState: daoStatePDA, proposal: proposalPDA, treasury: treasuryPDA,
-                    recurringPayment: recurringPaymentPDA, recipient: paymentRecipient.publicKey, systemProgram: SystemProgram.programId,
-                }).signers([stakerA]).rpc();
+
+                await program.methods.executeProposal().accounts({
+                    daoState: daoStatePDA, 
+                    proposal: proposalPDA, 
+                    authority: daoStatePDA,
+                    treasury: treasuryPDA,
+                    recurringPayment: recurringPaymentPDA, 
+                    recipient: recipient.publicKey, 
+                    systemProgram: SystemProgram.programId,
+                }).rpc();
 
                 const paymentAccount = await program.account.recurringPaymentAccount.fetch(recurringPaymentPDA);
                 assert.ok(paymentAccount.receiver.equals(paymentRecipient.publicKey), "定期支付的接收者不正确");

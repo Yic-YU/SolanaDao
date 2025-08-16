@@ -70,4 +70,14 @@ pub enum DaoError {
     VoteFailedMajority,
     #[msg("You do not have enough tokens staked to perform this action.")]
     InsufficientStake,
+    
+    // --- 新增错误类型 ---
+    #[msg("Proposal has not been approved by multisig yet.")]
+    ProposalNotApproved,
+    
+    #[msg("Proposal did not pass the voting threshold.")]
+    ProposalNotPassed,
+    
+    #[msg("Quorum requirement not met for this proposal.")]
+    QuorumNotMet,
 }

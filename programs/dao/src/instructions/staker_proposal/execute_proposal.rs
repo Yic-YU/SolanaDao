@@ -1,38 +1,74 @@
 // in instructions/stakeproposal/execute_proposal.rs
 use anchor_lang::{prelude::*, system_program};
-use crate::{error::DaoError, event::StakeProposalExecuted, state::{DaoState, DaoUpdateAction, Proposal, RecurringPaymentAccount}};
 
-pub fn execute_stake_proposal(ctx: Context<ExecuteProposal>) -> Result<()> {
+use crate::{
+    error::DaoError,
+    event::ProposalExecuted,
+    state::{DaoState, Proposal, ProposalType, RecurringPaymentAccount, DaoUpdateAction},
+};
+
+pub fn execute_proposal(ctx: Context<ExecuteProposal>) -> Result<()> {
     let proposal = &mut ctx.accounts.proposal;
     let dao_state = &mut ctx.accounts.dao_state;
     let clock = Clock::get()?;
 
-    // 1. 验证提案状态
-    require!(clock.unix_timestamp >= proposal.end_time, DaoError::VotePeriodNotOver);
+    // 验证提案状态
     require!(!proposal.executed, DaoError::ProposalAlreadyExecuted);
+    require!(proposal.approved_at.is_some(), DaoError::ProposalNotApproved);
+    require!(clock.unix_timestamp >= proposal.end_time, DaoError::ProposalNotActive);
 
-    // 2. 双重安全验证
-    // a. 多数决
-    let total_votes = proposal.yes_votes.checked_add(proposal.no_votes).unwrap();
-    let pass_threshold = (total_votes as u128)
-        .checked_mul(dao_state.pass_threshold_percentage as u128).unwrap()
-        .checked_div(100).unwrap() as u64;
+    // 计算投票结果
+    let total_votes = proposal.yes_votes + proposal.no_votes;
+    let pass_threshold = (total_votes * dao_state.pass_threshold_percentage as u64) / 100;
     
-    require!(proposal.yes_votes >= pass_threshold, DaoError::VoteFailedMajority);
+    // 检查是否达到法定人数
+    require!(total_votes >= dao_state.quorum as u64, DaoError::QuorumNotMet);
+    
+    // 检查是否通过
+    require!(proposal.yes_votes > pass_threshold, DaoError::ProposalNotPassed);
 
-    // b. 法定人数 (Quorum)
-    require!(proposal.voter_count >= dao_state.quorum, DaoError::QuorumNotReached);
-    
-    // 3. 执行提案
-    match proposal.proposal_type {
-        crate::state::ProposalType::WithdrawTreasury { amount, recipient } => {
-            require_keys_eq!(ctx.accounts.recipient.key(), recipient, DaoError::InvalidRecipient);
-            
+    // 执行提案
+    match &proposal.proposal_type {
+        // 执行定期支付
+        ProposalType::AddRecurringPayment { recipient, amount, currency, interval } => {
+            require_keys_eq!(ctx.accounts.recipient.key(), *recipient, DaoError::InvalidRecipient);
+            let recurring_payment = &mut ctx.accounts.recurring_payment;
+            let now = clock.unix_timestamp;
+            recurring_payment.dao_state = dao_state.key();
+            recurring_payment.receiver = *recipient;
+            recurring_payment.amount = *amount;
+            recurring_payment.currency = *currency;
+            recurring_payment.interval_day = *interval;
+            recurring_payment.next_claimable_timestamp = now.checked_add(*interval)
+                .ok_or(DaoError::ArithmeticOverflow)?;
+        },
+        // 执行更新DAO
+        ProposalType::UpdateDao { action } => {
+            match action {
+                DaoUpdateAction::AddSigner { new_signer } => {
+                    require!(!dao_state.signer.contains(new_signer), DaoError::SignerAlreadyExists);
+                    dao_state.signer.push(*new_signer);
+                },
+                DaoUpdateAction::RemoveSigner { signer_to_remove } => {
+                    require!(dao_state.signer.contains(signer_to_remove), DaoError::SignerNotFound);
+                    require!((dao_state.signer.len() - 1) as u8 >= dao_state.threshold, DaoError::CannotRemoveSigner);
+                    dao_state.signer.retain(|s| s != signer_to_remove);
+                },
+                DaoUpdateAction::ChangeThreshold { new_threshold } => {
+                    require!(*new_threshold > 0 && *new_threshold <= dao_state.signer.len() as u8, DaoError::InvalidNewThreshold);
+                    dao_state.threshold = *new_threshold;
+                },
+            }
+        },
+        // 执行国库提款
+        ProposalType::WithdrawTreasury { amount, recipient } => {
+            require_keys_eq!(ctx.accounts.recipient.key(), *recipient, DaoError::InvalidRecipient);
             let treasury = &ctx.accounts.treasury;
-            require!(treasury.lamports() >= amount, DaoError::InsufficientTreasuryBalance);
-
+            let system_program = &ctx.accounts.system_program;
+            require!(treasury.lamports() >= *amount, DaoError::InsufficientTreasuryBalance);
+            
             let cpi_context = CpiContext::new(
-                ctx.accounts.system_program.to_account_info(),
+                system_program.to_account_info(),
                 system_program::Transfer {
                     from: treasury.to_account_info(),
                     to: ctx.accounts.recipient.to_account_info(),
@@ -40,50 +76,22 @@ pub fn execute_stake_proposal(ctx: Context<ExecuteProposal>) -> Result<()> {
             );
             
             let dao_key = dao_state.key();
-            let treasury_bump = ctx.bumps.treasury; 
+            let treasury_bump = ctx.bumps.treasury;
             let seeds = &[
                 b"treasury".as_ref(),
                 dao_key.as_ref(),
-                &[treasury_bump] 
+                &[treasury_bump],
             ];
             let signer_seeds = &[&seeds[..]];
 
-            system_program::transfer(cpi_context.with_signer(signer_seeds), amount)?;
-        },
-        crate::state::ProposalType::AddRecurringPayment { recipient, amount, currency, interval } => {
-            require_keys_eq!(ctx.accounts.recipient.key(), recipient, DaoError::InvalidRecipient);
-
-            let recurring_payment = &mut ctx.accounts.recurring_payment;
-            recurring_payment.dao_state = dao_state.key();
-            recurring_payment.receiver = recipient;
-            recurring_payment.amount = amount;
-            recurring_payment.currency = currency;
-            recurring_payment.interval_day = interval;
-            recurring_payment.next_claimable_timestamp = clock.unix_timestamp.checked_add(interval).ok_or(DaoError::ArithmeticOverflow)?;
-        },
-        crate::state::ProposalType::UpdateDao { action } => {
-            match action {
-                DaoUpdateAction::AddSigner { new_signer } => {
-                    // 再次验证，防止在投票期间状态已改变
-                    require!(!dao_state.signer.contains(&new_signer), DaoError::SignerAlreadyExists);
-                    dao_state.signer.push(new_signer);
-                },
-                DaoUpdateAction::RemoveSigner { signer_to_remove } => {
-                    require!(dao_state.signer.contains(&signer_to_remove), DaoError::SignerNotFound);
-                    require!((dao_state.signer.len() - 1) as u8 >= dao_state.threshold, DaoError::CannotRemoveSigner);
-                    dao_state.signer.retain(|s| s != &signer_to_remove);
-                },
-                DaoUpdateAction::ChangeThreshold { new_threshold } => {
-                    require!(new_threshold > 0 && new_threshold <= dao_state.signer.len() as u8, DaoError::InvalidNewThreshold);
-                    dao_state.threshold = new_threshold;
-                },
-            }
+            system_program::transfer(cpi_context.with_signer(signer_seeds), *amount)?;
         },
     }
-
+    
     proposal.executed = true;
 
-    emit!(StakeProposalExecuted {
+    // 触发"执行"事件
+    emit!(ProposalExecuted {
         dao_state: dao_state.key(),
         proposal: proposal.key(),
         proposal_id: proposal.proposal_id,
@@ -95,17 +103,20 @@ pub fn execute_stake_proposal(ctx: Context<ExecuteProposal>) -> Result<()> {
 
 #[derive(Accounts)]
 pub struct ExecuteProposal<'info> {
-    #[account(mut)]
-    pub executor: Signer<'info>,
-
-    #[account(
-        mut, 
-        constraint = dao_state.key() == proposal.dao_state
-    )]
+    #[account(mut, has_one = authority)]
     pub dao_state: Account<'info, DaoState>,
 
-    #[account(mut)]
+    #[account(
+        mut,
+        seeds = [b"proposal".as_ref(), dao_state.key().as_ref(), &proposal.proposal_id.to_le_bytes()],
+        bump,
+        has_one = dao_state
+    )]
     pub proposal: Account<'info, Proposal>,
+
+    /// CHECK: DAO 的 authority，用于 has_one 约束
+    #[account(mut)]
+    pub authority: AccountInfo<'info>,
 
     #[account(
         mut,
@@ -114,19 +125,18 @@ pub struct ExecuteProposal<'info> {
     )]
     pub treasury: SystemAccount<'info>,
     
-    /// 在执行时才需要初始化，所以移到这里
+    #[account(mut)]
+    /// CHECK: The recipient account, verified in the instruction logic.
+    pub recipient: UncheckedAccount<'info>,
+
     #[account(
         init_if_needed,
-        payer = executor,
+        payer = authority,
         space = 8 + RecurringPaymentAccount::INIT_SPACE,
         seeds = [b"payment".as_ref(), dao_state.key().as_ref(), recipient.key().as_ref()],
         bump
     )]
     pub recurring_payment: Account<'info, RecurringPaymentAccount>,
 
-    #[account(mut)]
-    /// CHECK: The recipient account, verified in the instruction logic.
-    pub recipient: UncheckedAccount<'info>,
-    
     pub system_program: Program<'info, System>,
 }
