@@ -14,7 +14,7 @@ use crate::state::ProposalType;
 use crate::instructions::staker_proposal::VoteChoice;
 
 #[program]
-pub mod dao_program {
+pub mod dao {
 
     use crate::state::ProposalType;
 
