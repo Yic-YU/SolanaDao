@@ -1,6 +1,6 @@
 use anchor_lang::{prelude::*, system_program};
 
-use crate::{config::{Config, DEVELOPER_FEE}, error::DaoError, event::PaymentClaimed, state::{DaoState, RecurringPaymentAccount}};
+use crate::{config::Config, error::DaoError, event::PaymentClaimed, state::{DaoState, RecurringPaymentAccount}};
 
 pub fn claim_payment(ctx: Context<ClaimPayment>) -> Result<()> {
 
@@ -10,7 +10,7 @@ pub fn claim_payment(ctx: Context<ClaimPayment>) -> Result<()> {
     let payment = &mut ctx.accounts.recurring_payment; // 直接获取支付账户
     let recipient = &ctx.accounts.recipient;
     let system_program = &ctx.accounts.system_program;
-    let developer_wallet = &ctx.accounts.developer_wallet;
+
     let now = Clock::get()?.unix_timestamp;
 
     // 不再需要在 Vec 中搜索，直接操作 payment 账户
@@ -27,13 +27,7 @@ pub fn claim_payment(ctx: Context<ClaimPayment>) -> Result<()> {
         DaoError::InsufficientTreasuryBalance
     );
 
-    // 转账开发者费用
-    let cpi_accounts = system_program::Transfer {
-        from: recipient.to_account_info(),
-        to: developer_wallet.to_account_info(),
-    };
-    let cpi_context = CpiContext::new(system_program.to_account_info(), cpi_accounts);
-    system_program::transfer(cpi_context, DEVELOPER_FEE)?;
+
 
 
     // 从金库 PDA 转账给收款人
@@ -107,11 +101,7 @@ pub struct ClaimPayment<'info> {
     )]
     pub config: Account<'info, Config>,
 
-    #[account(
-        mut,
-        address = config.developer_wallet
-    )]
-    pub developer_wallet: SystemAccount<'info>,
+
 
 
     pub system_program: Program<'info, System>,

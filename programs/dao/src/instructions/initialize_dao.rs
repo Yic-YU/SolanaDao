@@ -2,7 +2,7 @@
 
 use anchor_lang::{prelude::*, system_program};
 use anchor_spl::token::{Mint, Token, TokenAccount};
-use crate::{error::DaoError, event::DaoInitialized, state::DaoState, config::Config, config::DEVELOPER_FEE};
+use crate::{error::DaoError, event::DaoInitialized, state::DaoState, config::Config};
 
 
 // 这是初始化 DAO 的主要函数
@@ -19,13 +19,7 @@ pub fn initialize_dao(
     require!(threshold > 0, DaoError::InvalidThreshold);
     require!(vote_duration > 0, DaoError::InvalidVoteDuration);
 
-    // 2. 支付开发者费用 (如果需要)
-    let cpi_accounts = system_program::Transfer {
-        from: ctx.accounts.authority.to_account_info(),
-        to: ctx.accounts.developer_wallet.to_account_info(),
-    };
-    let cpi_context = CpiContext::new(ctx.accounts.system_program.to_account_info(), cpi_accounts);
-    system_program::transfer(cpi_context, DEVELOPER_FEE)?;
+
 
 
     // 3. 初始化 DaoState 账户
@@ -102,12 +96,6 @@ pub struct InitializeDao<'info> {
         bump
     )]
     pub config: Account<'info, Config>,
-
-    #[account(
-        mut,
-        address = config.developer_wallet
-    )]
-    pub developer_wallet: SystemAccount<'info>,
 
     pub system_program: Program<'info, System>,
     /// 需要 Token Program 来创建金库账户
