@@ -1,6 +1,6 @@
 // file: dao_program/src/instructions/initialize_dao.rs
 
-use anchor_lang::{prelude::*, system_program};
+use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
 use crate::{error::DaoError, event::DaoInitialized, state::DaoState, config::Config};
 

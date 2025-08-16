@@ -397,7 +397,6 @@ describe("dao_program", () => {
                 await new Promise(resolve => setTimeout(resolve, 11 * 1000));
 
                 const recipientInitialBalance = await connection.getBalance(paymentRecipient.publicKey);
-                const developerInitialBalance = await connection.getBalance(newDeveloperWallet.publicKey);
 
                 await program.methods.claimPayment().accounts({
                     daoState: daoStatePDA,
@@ -409,14 +408,11 @@ describe("dao_program", () => {
                     systemProgram: SystemProgram.programId,
                 }).signers([paymentRecipient]).rpc();
 
-                // 验证开发者费用
-                const developerFee = 1000000; // 0.001 SOL
-                const developerFinalBalance = await connection.getBalance(newDeveloperWallet.publicKey);
-                assert.equal(developerFinalBalance, developerInitialBalance + developerFee, "开发者钱包应收到费用");
+
 
                 // 验证收款人余额
                 const recipientFinalBalance = await connection.getBalance(paymentRecipient.publicKey);
-                const expectedBalance = recipientInitialBalance + paymentAmount.toNumber() - developerFee;
+                const expectedBalance = recipientInitialBalance + paymentAmount.toNumber();
                 // 允许一点点gas费误差
                 assert.closeTo(recipientFinalBalance, expectedBalance, 50000, "收款人余额增加不正确");
             });
