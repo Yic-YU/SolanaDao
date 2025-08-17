@@ -14,22 +14,48 @@ pub fn vote(ctx: Context<Vote>, choice: VoteChoice) -> Result<()> {
     let clock = Clock::get()?;
 
     // 验证提案是否处于可投票状态
-    require!(!proposal.executed && clock.unix_timestamp < proposal.end_time, DaoError::ProposalNotActive);
-    // 验证投票者是否已质押
+    require!(!proposal.executed, DaoError::ProposalAlreadyExecuted);
+    
+    // 验证提案是否已经通过多签批准
+    require!(
+        proposal.approved_at.is_some(), 
+        DaoError::ProposalNotApproved
+    );
+    
+    // 验证投票是否在有效期内
+    require!(
+        clock.unix_timestamp < proposal.end_time, 
+        DaoError::ProposalNotActive
+    );
+    
+    // 验证投票者是否已质押足够数量
     let dao_state = &ctx.accounts.dao_state;
-    require!(stake_account.amount >= dao_state.min_staking_amount, DaoError::InsufficientStake);
+    require!(
+        stake_account.amount >= dao_state.min_staking_amount, 
+        DaoError::InsufficientStake
+    );
+
+    // 验证是否已经投票过
+    require!(
+        !ctx.accounts.vote_record.proposal.eq(&proposal.key()) || 
+        ctx.accounts.vote_record.proposal.eq(&Pubkey::default()),
+        DaoError::AlreadyVoted
+    );
 
     // 更新票数
     let vote_weight = stake_account.amount;
     match choice {
         VoteChoice::Yes => {
-            proposal.yes_votes = proposal.yes_votes.checked_add(vote_weight).unwrap();
+            proposal.yes_votes = proposal.yes_votes.checked_add(vote_weight)
+                .ok_or(DaoError::ArithmeticOverflow)?;
         },
         VoteChoice::No => {
-            proposal.no_votes = proposal.no_votes.checked_add(vote_weight).unwrap();
+            proposal.no_votes = proposal.no_votes.checked_add(vote_weight)
+                .ok_or(DaoError::ArithmeticOverflow)?;
         },
     }
-    proposal.voter_count = proposal.voter_count.checked_add(1).unwrap();
+    proposal.voter_count = proposal.voter_count.checked_add(1)
+        .ok_or(DaoError::ArithmeticOverflow)?;
 
     // 记录投票，防止重复投票
     let vote_record = &mut ctx.accounts.vote_record;

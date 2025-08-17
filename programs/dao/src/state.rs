@@ -115,7 +115,7 @@ pub enum  ProposalType {
 pub struct Proposal {
     /// 关联的 DAO State 账户地址
     pub dao_state: Pubkey,
-    /// 提案发起人
+    /// 提案发起人（多签者）
     pub proposer: Pubkey,
     /// 提案的唯一ID
     pub proposal_id: u64,
@@ -140,6 +140,10 @@ pub struct Proposal {
     pub end_time: i64,
     /// 提案是否已执行
     pub executed: bool,
+    /// 提案创建时间
+    pub created_at: i64,
+    /// 多签批准时间
+    pub approved_at: Option<i64>,
 }
 
 // --- 投票记录账户 ---

@@ -14,7 +14,7 @@ use crate::state::ProposalType;
 use crate::instructions::staker_proposal::VoteChoice;
 
 #[program]
-pub mod dao_program {
+pub mod dao {
 
     use crate::state::ProposalType;
 
@@ -39,21 +39,28 @@ pub mod dao_program {
             min_staking_amount,
         )
     }
-    // /// 发起一个多签提案
-    // pub fn propose(ctx: Context<Propose>, proposal_id: u64, action: ProposalType) -> Result<()> {
-    //     instructions::mul_propose::mul_create_propose(ctx, proposal_id, action)
-    // }
 
-    // /// 批准并可能执行一个多签提案
-    // pub fn approve(ctx: Context<Approve>) -> Result<()> {
-    //     instructions::mul_approve::mul_approve_propose(ctx)
-    // }
-    
+    /// 发起一个多签提案
+    pub fn mul_create_propose(
+        ctx: Context<Propose>, 
+        proposal_id: u64, 
+        proposal_type: ProposalType,
+        title: String,
+        description: String
+    ) -> Result<()> {
+        instructions::mul_proposal::mul_create_propose(ctx, proposal_id, proposal_type, title, description)
+    }
+
+    /// 批准一个多签提案
+    pub fn mul_approve_propose(ctx: Context<Approve>) -> Result<()> {
+        instructions::mul_proposal::mul_approve_propose(ctx)
+    }
 
     /// 领取定期支付
     pub fn claim_payment(ctx: Context<ClaimPayment>) -> Result<()> {
         instructions::claim_payment::claim_payment(ctx)
     }
+    
     /// 质押治理代币
     pub fn stake(ctx: Context<Stake>, amount: u64) -> Result<()> {
         instructions::stake::stake(ctx, amount)
@@ -64,30 +71,16 @@ pub mod dao_program {
         instructions::unstake::unstake(ctx)
     }
 
-    // --- 新增：质押投票相关指令 ---
-
-    /// 发起一个质押投票提案
-    pub fn create_stake_proposal(
-        ctx: Context<CreateProposal>, 
-        proposal_id: u64,
-        title: String,
-        description: String,
-        proposal_type: ProposalType
-    ) -> Result<()> {
-        instructions::staker_proposal::create_stake_proposal(ctx, proposal_id, title, description, proposal_type)
-    }
-
-    /// 对质押提案进行投票
+    /// 对提案进行投票
     pub fn vote(ctx: Context<Vote>, choice: VoteChoice) -> Result<()> {
         instructions::staker_proposal::vote(ctx, choice)
     }
 
-    /// 执行一个已通过的质押提案
-    pub fn execute_stake_proposal(ctx: Context<ExecuteProposal>) -> Result<()> {
-        instructions::staker_proposal::execute_stake_proposal(ctx)
+    /// 执行一个已通过的提案
+    pub fn execute_proposal(ctx: Context<ExecuteProposal>) -> Result<()> {
+        instructions::staker_proposal::execute_proposal(ctx)
     }
 
-    
     /// 全局配置指令
     pub fn initialize_config(
         ctx: Context<InitializeConfig>,
@@ -99,5 +92,4 @@ pub mod dao_program {
     pub fn update_config(ctx: Context<UpdateConfig>, new_developer_wallet: Pubkey) -> Result<()> {
         instructions::update_config::update_config(ctx, new_developer_wallet)
     }
-    
 }

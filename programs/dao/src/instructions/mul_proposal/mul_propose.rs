@@ -5,12 +5,15 @@ use crate::{error::DaoError, event::ProposalCreated, state::{DaoState, DaoUpdate
 pub fn mul_create_propose(
     ctx: Context<Propose>,
     proposal_id: u64, 
-    proposal_type: ProposalType
+    proposal_type: ProposalType,
+    title: String,
+    description: String
 ) -> Result<()> {
     
     let dao_state = &ctx.accounts.dao_state;
     let proposal = &mut ctx.accounts.proposal;
     let proposer = &ctx.accounts.proposer;
+    let clock = Clock::get()?;
 
     // 1. 根据不同的 Action 类型进行特定的验证
     match &proposal_type {
@@ -79,6 +82,14 @@ pub fn mul_create_propose(
     proposal.approvals = Vec::new();
     proposal.executed = false;
     proposal.proposal_id = proposal_id;
+    proposal.title = title;
+    proposal.description = description;
+    proposal.created_at = clock.unix_timestamp;
+    proposal.approved_at = None;
+    proposal.yes_votes = 0;
+    proposal.no_votes = 0;
+    proposal.voter_count = 0;
+    proposal.end_time = 0; // 多签批准后设置
 
     // 触发统一事件
     emit!(ProposalCreated {
