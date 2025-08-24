@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Solana DAO 前端
 
-## Getting Started
+这是一个基于 Next.js 15 和 Solana 区块链的去中心化自治组织管理平台前端应用。
 
-First, run the development server:
+## 功能特性
+
+- 🔗 Solana 钱包连接（支持 Phantom、Solflare 等）
+- 🏛️ DAO 创建和初始化
+- 🗳️ 治理投票系统
+- 💰 代币质押和收益管理
+- 🌐 基于 Devnet 的测试环境
+
+## 技术栈
+
+- **框架**: Next.js 15 (App Router)
+- **语言**: TypeScript
+- **样式**: Tailwind CSS 4
+- **区块链**: Solana Web3.js + Anchor
+- **钱包**: Solana Wallet Adapter
+
+## 快速开始
+
+### 安装依赖
+
+```bash
+npm install
+```
+
+### 开发环境运行
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+应用将在 [http://localhost:3000](http://localhost:3000) 启动。
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 构建生产版本
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## 项目结构
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── components/        # 可复用组件
+│   │   ├── wallet/       # 钱包相关组件
+│   │   └── InitializeDao.tsx  # DAO 初始化组件
+│   ├── globals.css       # 全局样式
+│   ├── layout.tsx        # 根布局
+│   └── page.tsx          # 主页面
+└── idl/                  # Anchor IDL 文件
+    ├── dao.json          # DAO 程序 IDL
+    └── dao.ts            # 类型定义
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 环境配置
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+项目默认连接到 Solana Devnet。如需更改网络配置，请修改 `WalletContextProvider.tsx` 中的网络设置。
 
-## Deploy on Vercel
+## 开发说明
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. 确保已安装 Node.js 18+ 版本
+2. 使用 Solana Devnet 进行测试
+3. 需要 Solana 钱包（如 Phantom）进行交互
+4. 所有区块链操作都在 Devnet 上进行
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 故障排除
+
+如果遇到启动问题：
+
+1. 检查 Node.js 版本
+2. 删除 `node_modules` 和 `package-lock.json`，重新安装
+3. 确保所有依赖包版本兼容
+4. 检查 TypeScript 配置
+
+## 许可证
+
+MIT License

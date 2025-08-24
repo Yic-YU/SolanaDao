@@ -40,9 +40,12 @@ export function InitializeDao() {
     setTxSignature("");
 
     try {
-      // @ts-ignore
-      const provider = new anchor.AnchorProvider(connection, { publicKey, sendTransaction }, anchor.AnchorProvider.defaultOptions());
-      const program = new anchor.Program<Dao>(idl_object, PROGRAM_ID, provider);
+      const provider = new anchor.AnchorProvider(connection, { 
+        publicKey, 
+        signTransaction: (tx) => Promise.resolve(tx),
+        signAllTransactions: (txs) => Promise.resolve(txs)
+      }, anchor.AnchorProvider.defaultOptions());
+      const program = new anchor.Program(idl_object as any, PROGRAM_ID, provider);
 
       const [daoStatePDA] = web3.PublicKey.findProgramAddressSync(
         [Buffer.from("dao"), publicKey.toBuffer()],
@@ -63,7 +66,6 @@ export function InitializeDao() {
         [Buffer.from("config")],
         program.programId
       );
-
 
       const transaction = await program.methods
         .initializeDao(
@@ -91,8 +93,7 @@ export function InitializeDao() {
       await connection.confirmTransaction(signature, "confirmed");
 
       setTxSignature(signature);
-    } catch (error)
-     {
+    } catch (error) {
       console.error("Error initializing DAO:", error);
       alert(`Error initializing DAO: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
@@ -193,14 +194,14 @@ export function InitializeDao() {
       </form>
       {txSignature && (
         <div className="mt-4 break-words">
-            Transaction successful! Signature: {""}
+          Transaction successful! Signature: {""}
           <a
             href={`https://explorer.solana.com/tx/${txSignature}?cluster=devnet`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-400 hover:underline"
           >
-             {txSignature}
+            {txSignature}
           </a>
         </div>
       )}

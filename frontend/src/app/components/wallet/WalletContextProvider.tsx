@@ -8,9 +8,10 @@ import {
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
 import { clusterApiUrl } from "@solana/web3.js";
+import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
 
-// Default styles that can be overridden by your app
-require("@solana/wallet-adapter-react-ui/styles.css");
+// 导入钱包适配器样式
+import "@solana/wallet-adapter-react-ui/styles.css";
 
 export const WalletContextProvider: FC<{ children: React.ReactNode }> = ({
   children,
@@ -23,10 +24,10 @@ export const WalletContextProvider: FC<{ children: React.ReactNode }> = ({
 
   const wallets = useMemo(
     () => [
-      // Add any wallets you want to support.
-      // UnsafeBurnerWalletAdapter is a good option for testing.
+      new PhantomWalletAdapter(),
+      new SolflareWalletAdapter(),
     ],
-    [network]
+    []
   );
 
   return (
