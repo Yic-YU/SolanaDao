@@ -1,0 +1,2364 @@
+{
+  "address": "3LDehVNaAgFqvjo1cPg96j8tKUReLrpsKpW321fb8uyR",
+  "metadata": {
+    "name": "dao",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "claim_payment",
+      "docs": [
+        "领取定期支付"
+      ],
+      "discriminator": [
+        69,
+        112,
+        250,
+        167,
+        37,
+        156,
+        200,
+        30
+      ],
+      "accounts": [
+        {
+          "name": "dao_state",
+          "writable": true,
+          "relations": [
+            "recurring_payment"
+          ]
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "recurring_payment",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  121,
+                  109,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              },
+              {
+                "kind": "account",
+                "path": "recipient"
+              }
+            ]
+          }
+        },
+        {
+          "name": "recipient",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "execute_proposal",
+      "docs": [
+        "执行一个已通过的提案"
+      ],
+      "discriminator": [
+        186,
+        60,
+        116,
+        133,
+        108,
+        128,
+        111,
+        28
+      ],
+      "accounts": [
+        {
+          "name": "dao_state",
+          "writable": true,
+          "relations": [
+            "proposal"
+          ]
+        },
+        {
+          "name": "proposal",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  112,
+                  111,
+                  115,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              },
+              {
+                "kind": "account",
+                "path": "proposal.proposal_id",
+                "account": "Proposal"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "relations": [
+            "dao_state"
+          ]
+        },
+        {
+          "name": "treasury",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "recipient",
+          "writable": true
+        },
+        {
+          "name": "recurring_payment",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  97,
+                  121,
+                  109,
+                  101,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              },
+              {
+                "kind": "account",
+                "path": "recipient"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "initialize_config",
+      "docs": [
+        "全局配置指令"
+      ],
+      "discriminator": [
+        208,
+        127,
+        21,
+        1,
+        194,
+        190,
+        196,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "developer_wallet",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "initialize_dao",
+      "docs": [
+        "初始化Dao"
+      ],
+      "discriminator": [
+        128,
+        226,
+        96,
+        90,
+        39,
+        56,
+        24,
+        196
+      ],
+      "accounts": [
+        {
+          "name": "dao_state",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  100,
+                  97,
+                  111
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "treasury",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  116,
+                  114,
+                  101,
+                  97,
+                  115,
+                  117,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_mint"
+        },
+        {
+          "name": "governance_vault",
+          "docs": [
+            "新增：初始化治理代币金库PDA"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  111,
+                  118,
+                  101,
+                  114,
+                  110,
+                  97,
+                  110,
+                  99,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "docs": [
+            "需要 Token Program 来创建金库账户"
+          ],
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "rent",
+          "docs": [
+            "需要 Rent 来初始化账户"
+          ],
+          "address": "SysvarRent111111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "threshold",
+          "type": "u8"
+        },
+        {
+          "name": "vote_duration",
+          "type": "i64"
+        },
+        {
+          "name": "quorum",
+          "type": "u32"
+        },
+        {
+          "name": "staking_yield_rate",
+          "type": "u16"
+        },
+        {
+          "name": "pass_threshold_percentage",
+          "type": "u8"
+        },
+        {
+          "name": "min_staking_amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "mul_approve_propose",
+      "docs": [
+        "批准一个多签提案"
+      ],
+      "discriminator": [
+        254,
+        80,
+        167,
+        198,
+        244,
+        117,
+        89,
+        247
+      ],
+      "accounts": [
+        {
+          "name": "dao_state",
+          "writable": true,
+          "relations": [
+            "proposal"
+          ]
+        },
+        {
+          "name": "proposal",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  112,
+                  111,
+                  115,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              },
+              {
+                "kind": "account",
+                "path": "proposal.proposal_id",
+                "account": "Proposal"
+              }
+            ]
+          }
+        },
+        {
+          "name": "approver",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "relations": [
+            "dao_state"
+          ]
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "mul_create_propose",
+      "docs": [
+        "发起一个多签提案"
+      ],
+      "discriminator": [
+        181,
+        241,
+        250,
+        111,
+        26,
+        23,
+        146,
+        236
+      ],
+      "accounts": [
+        {
+          "name": "dao_state"
+        },
+        {
+          "name": "proposal",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  112,
+                  111,
+                  115,
+                  97,
+                  108
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              },
+              {
+                "kind": "arg",
+                "path": "proposal_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "proposer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "authority",
+          "relations": [
+            "dao_state"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "proposal_id",
+          "type": "u64"
+        },
+        {
+          "name": "proposal_type",
+          "type": {
+            "defined": {
+              "name": "ProposalType"
+            }
+          }
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "stake",
+      "docs": [
+        "质押治理代币"
+      ],
+      "discriminator": [
+        206,
+        176,
+        202,
+        18,
+        200,
+        209,
+        179,
+        108
+      ],
+      "accounts": [
+        {
+          "name": "staker",
+          "docs": [
+            "交易的发起者和签名者，即进行质押的用户。"
+          ],
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "dao_state",
+          "docs": [
+            "DAO 的全局状态账户，用于获取治理代币 Mint 地址、",
+            "以及作为生成 \"governance_vault\" PDA 的种子。"
+          ],
+          "writable": true
+        },
+        {
+          "name": "staker_token_account",
+          "docs": [
+            "质押者的代币账户，代币将从这里转出。"
+          ],
+          "writable": true
+        },
+        {
+          "name": "governance_vault",
+          "docs": [
+            "DAO 的治理质押金库，一个用于存放所有质押代币的 PDA 代币账户。"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  111,
+                  118,
+                  101,
+                  114,
+                  110,
+                  97,
+                  110,
+                  99,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "stake_account",
+          "docs": [
+            "记录用户质押信息的 PDA 数据账户。",
+            "每个用户只有一个质押账户。如果是首次质押，则创建此账户。"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  107,
+                  101,
+                  95,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              },
+              {
+                "kind": "account",
+                "path": "staker"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "unstake",
+      "docs": [
+        "赎回所有已质押的代币"
+      ],
+      "discriminator": [
+        90,
+        95,
+        107,
+        42,
+        205,
+        124,
+        50,
+        225
+      ],
+      "accounts": [
+        {
+          "name": "staker",
+          "docs": [
+            "交易的发起者和签名者，即赎回代币的用户。"
+          ],
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "stake_account"
+          ]
+        },
+        {
+          "name": "dao_state",
+          "writable": true,
+          "relations": [
+            "stake_account"
+          ]
+        },
+        {
+          "name": "staker_token_account",
+          "docs": [
+            "质押者的个人代币账户，赎回的代币将存入这里。"
+          ],
+          "writable": true
+        },
+        {
+          "name": "governance_vault",
+          "docs": [
+            "治理质押金库，代币将从这里转出。"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  103,
+                  111,
+                  118,
+                  101,
+                  114,
+                  110,
+                  97,
+                  110,
+                  99,
+                  101,
+                  95,
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              }
+            ]
+          }
+        },
+        {
+          "name": "stake_account",
+          "docs": [
+            "用户的个人质押记录。",
+            "`close` 属性表示在指令成功执行后，关闭该账户并将租金返还给 `staker`。"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  107,
+                  101,
+                  95,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "dao_state"
+              },
+              {
+                "kind": "account",
+                "path": "staker"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_config",
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "new_developer_wallet",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "vote",
+      "docs": [
+        "对提案进行投票"
+      ],
+      "discriminator": [
+        227,
+        110,
+        155,
+        23,
+        136,
+        126,
+        172,
+        25
+      ],
+      "accounts": [
+        {
+          "name": "voter",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "stake_account",
+          "docs": [
+            "获取投票权重"
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  115,
+                  116,
+                  97,
+                  107,
+                  101,
+                  95,
+                  97,
+                  99,
+                  99,
+                  111,
+                  117,
+                  110,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "proposal.dao_state",
+                "account": "Proposal"
+              },
+              {
+                "kind": "account",
+                "path": "voter"
+              }
+            ]
+          }
+        },
+        {
+          "name": "dao_state"
+        },
+        {
+          "name": "proposal",
+          "writable": true
+        },
+        {
+          "name": "vote_record",
+          "docs": [
+            "创建投票记录账户以防止重复投票"
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  111,
+                  116,
+                  101,
+                  95,
+                  114,
+                  101,
+                  99,
+                  111,
+                  114,
+                  100
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "proposal"
+              },
+              {
+                "kind": "account",
+                "path": "voter"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "choice",
+          "type": {
+            "defined": {
+              "name": "VoteChoice"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "DaoState",
+      "discriminator": [
+        24,
+        50,
+        14,
+        105,
+        233,
+        60,
+        201,
+        244
+      ]
+    },
+    {
+      "name": "Proposal",
+      "discriminator": [
+        26,
+        94,
+        189,
+        187,
+        116,
+        136,
+        53,
+        33
+      ]
+    },
+    {
+      "name": "RecurringPaymentAccount",
+      "discriminator": [
+        174,
+        147,
+        229,
+        245,
+        92,
+        197,
+        197,
+        178
+      ]
+    },
+    {
+      "name": "StakeAccount",
+      "discriminator": [
+        80,
+        158,
+        67,
+        124,
+        50,
+        189,
+        192,
+        255
+      ]
+    },
+    {
+      "name": "VoteRecord",
+      "discriminator": [
+        112,
+        9,
+        123,
+        165,
+        234,
+        9,
+        157,
+        167
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "DaoInitialized",
+      "discriminator": [
+        12,
+        175,
+        194,
+        199,
+        20,
+        194,
+        184,
+        41
+      ]
+    },
+    {
+      "name": "PaymentClaimed",
+      "discriminator": [
+        238,
+        86,
+        136,
+        254,
+        229,
+        217,
+        63,
+        80
+      ]
+    },
+    {
+      "name": "ProposalApproved",
+      "discriminator": [
+        70,
+        49,
+        155,
+        228,
+        157,
+        43,
+        88,
+        49
+      ]
+    },
+    {
+      "name": "ProposalCreated",
+      "discriminator": [
+        186,
+        8,
+        160,
+        108,
+        81,
+        13,
+        51,
+        206
+      ]
+    },
+    {
+      "name": "ProposalExecuted",
+      "discriminator": [
+        92,
+        213,
+        189,
+        201,
+        101,
+        83,
+        111,
+        83
+      ]
+    },
+    {
+      "name": "StakeProposalCreated",
+      "discriminator": [
+        154,
+        152,
+        128,
+        116,
+        166,
+        190,
+        37,
+        40
+      ]
+    },
+    {
+      "name": "StakeProposalExecuted",
+      "discriminator": [
+        93,
+        63,
+        109,
+        136,
+        147,
+        162,
+        246,
+        187
+      ]
+    },
+    {
+      "name": "TokensStaked",
+      "discriminator": [
+        220,
+        130,
+        145,
+        142,
+        109,
+        123,
+        38,
+        100
+      ]
+    },
+    {
+      "name": "TokensUnstaked",
+      "discriminator": [
+        137,
+        203,
+        131,
+        80,
+        135,
+        107,
+        181,
+        150
+      ]
+    },
+    {
+      "name": "VoteCasted",
+      "discriminator": [
+        156,
+        98,
+        66,
+        40,
+        149,
+        79,
+        255,
+        51
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "RecurringPaymentExists",
+      "msg": "Recurring payment for this recipient already exists."
+    },
+    {
+      "code": 6001,
+      "name": "NoClaimablePayment",
+      "msg": "No claimable payment found for this recipient."
+    },
+    {
+      "code": 6002,
+      "name": "ClaimTooEarly",
+      "msg": "It is not yet time to claim this payment."
+    },
+    {
+      "code": 6003,
+      "name": "InvalidThreshold",
+      "msg": "Threshold must be greater than 0."
+    },
+    {
+      "code": 6004,
+      "name": "InvalidVoteDuration",
+      "msg": "Vote duration must be a positive value."
+    },
+    {
+      "code": 6005,
+      "name": "InvalidPaymentAmount",
+      "msg": "Recurring payment amount must be greater than 0."
+    },
+    {
+      "code": 6006,
+      "name": "InvalidPaymentInterval",
+      "msg": "Recurring payment interval must be a positive value."
+    },
+    {
+      "code": 6007,
+      "name": "InvalidCurrency",
+      "msg": "Recurring payment currencyType must be sol."
+    },
+    {
+      "code": 6008,
+      "name": "InvalidRecipient",
+      "msg": "Recipient cannot be the DAO treasury itself."
+    },
+    {
+      "code": 6009,
+      "name": "InsufficientTreasuryBalance",
+      "msg": "Treasury does not have enough funds to make this payment."
+    },
+    {
+      "code": 6010,
+      "name": "ArithmeticOverflow",
+      "msg": "An arithmetic operation resulted in an overflow."
+    },
+    {
+      "code": 6011,
+      "name": "UnauthorizedSigner",
+      "msg": "Signer is not authorized to perform this action."
+    },
+    {
+      "code": 6012,
+      "name": "ProposalAlreadyExecuted",
+      "msg": "This proposal has already been executed."
+    },
+    {
+      "code": 6013,
+      "name": "AlreadyApproved",
+      "msg": "Signer has already approved this proposal."
+    },
+    {
+      "code": 6014,
+      "name": "SignerAlreadyExists",
+      "msg": "Signer is already part of the DAO."
+    },
+    {
+      "code": 6015,
+      "name": "SignerNotFound",
+      "msg": "Signer to be removed was not found."
+    },
+    {
+      "code": 6016,
+      "name": "CannotRemoveSigner",
+      "msg": "Cannot remove signer, the total number of signers would fall below the threshold."
+    },
+    {
+      "code": 6017,
+      "name": "InvalidNewThreshold",
+      "msg": "The new threshold is invalid. It must be greater than 0 and not exceed the number of signers."
+    },
+    {
+      "code": 6018,
+      "name": "InvalidStakeAmount",
+      "msg": "Stake amount must be greater than 0."
+    },
+    {
+      "code": 6019,
+      "name": "NoTokensStaked",
+      "msg": "No tokens staked to unstake."
+    },
+    {
+      "code": 6020,
+      "name": "NotStaked",
+      "msg": "You must have a stake in the DAO to create a proposal."
+    },
+    {
+      "code": 6021,
+      "name": "ProposalNotActive",
+      "msg": "The proposal is not currently active for voting."
+    },
+    {
+      "code": 6022,
+      "name": "VotePeriodNotOver",
+      "msg": "The voting period for this proposal has not yet ended."
+    },
+    {
+      "code": 6023,
+      "name": "AlreadyVoted",
+      "msg": "You have already voted on this proposal."
+    },
+    {
+      "code": 6024,
+      "name": "QuorumNotReached",
+      "msg": "The proposal did not meet the required quorum."
+    },
+    {
+      "code": 6025,
+      "name": "VoteFailedMajority",
+      "msg": "The proposal failed because there were more 'No' votes than 'Yes' votes."
+    },
+    {
+      "code": 6026,
+      "name": "InsufficientStake",
+      "msg": "You do not have enough tokens staked to perform this action."
+    },
+    {
+      "code": 6027,
+      "name": "ProposalNotApproved",
+      "msg": "Proposal has not been approved by multisig yet."
+    },
+    {
+      "code": 6028,
+      "name": "ProposalNotPassed",
+      "msg": "Proposal did not pass the voting threshold."
+    },
+    {
+      "code": 6029,
+      "name": "QuorumNotMet",
+      "msg": "Quorum requirement not met for this proposal."
+    }
+  ],
+  "types": [
+    {
+      "name": "Config",
+      "docs": [
+        "全局配置账户，用于存储可由管理员更新的参数"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "docs": [
+              "拥有更新配置权限的管理员地址"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "developer_wallet",
+            "docs": [
+              "接收平台费用的开发者/平台方钱包地址"
+            ],
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "CurrencyType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Sol"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DaoInitialized",
+      "docs": [
+        "dao初始化"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "threshold",
+            "type": "u8"
+          },
+          {
+            "name": "vote_duration",
+            "type": "i64"
+          },
+          {
+            "name": "quorum",
+            "type": "u32"
+          },
+          {
+            "name": "staking_yield_rate",
+            "type": "u16"
+          },
+          {
+            "name": "pass_threshold_percentage",
+            "type": "u8"
+          },
+          {
+            "name": "min_staking_amount",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DaoState",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "project",
+            "docs": [
+              "项目地址（32）"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "authority",
+            "docs": [
+              "DAO 的最高管理员（32）"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "docs": [
+              "DAO 的金库地址，用于存放资金。（32）"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "token_mint",
+            "docs": [
+              "DAO 的治理代币 Mint 地址（32）"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "signer",
+            "docs": [
+              "签名者列表  （4 + N*32）"
+            ],
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "threshold",
+            "docs": [
+              "阈值 （1）"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "vote_duration",
+            "docs": [
+              "提案的投票持续时长 （8）"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "total_staked_amount",
+            "docs": [
+              "总质押代币数量 (8)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "quorum",
+            "docs": [
+              "法定人数：执行提案时，必须达到的最少投票人数 (u32)"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "staking_yield_rate",
+            "docs": [
+              "质押年化收益率 (u16, e.g., 500 for 5%)"
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "pass_threshold_percentage",
+            "docs": [
+              "投票通过的权重百分比 (u8, e.g., 60 for 60%)"
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "min_staking_amount",
+            "docs": [
+              "参与提案和投票的最小质押代币数 (u64)"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "DaoUpdateAction",
+      "docs": [
+        "定义了可以对 DAO 进行的修改操作"
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "AddSigner",
+            "fields": [
+              {
+                "name": "new_signer",
+                "type": "pubkey"
+              }
+            ]
+          },
+          {
+            "name": "RemoveSigner",
+            "fields": [
+              {
+                "name": "signer_to_remove",
+                "type": "pubkey"
+              }
+            ]
+          },
+          {
+            "name": "ChangeThreshold",
+            "fields": [
+              {
+                "name": "new_threshold",
+                "type": "u8"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "PaymentClaimed",
+      "docs": [
+        "领取定期支付事件"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO 账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "payment_account",
+            "docs": [
+              "支付账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "recipient",
+            "docs": [
+              "领取人地址"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "claimed_amount",
+            "docs": [
+              "本次领取的金额"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "next_claimable_timestamp",
+            "docs": [
+              "更新后的下一次可领取时间戳"
+            ],
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Proposal",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO State 账户地址"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposer",
+            "docs": [
+              "提案发起人（多签者）"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal_id",
+            "docs": [
+              "提案的唯一ID"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "proposal_type",
+            "docs": [
+              "提案的具体操作"
+            ],
+            "type": {
+              "defined": {
+                "name": "ProposalType"
+              }
+            }
+          },
+          {
+            "name": "approvals",
+            "docs": [
+              "已批准该提案的签名者列表"
+            ],
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "title",
+            "docs": [
+              "提案的标题"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "docs": [
+              "提案的描述"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "yes_votes",
+            "docs": [
+              "赞成票总数 (基于质押权重)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "no_votes",
+            "docs": [
+              "反对票总数 (基于质押权重)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "voter_count",
+            "docs": [
+              "参与投票的总人数"
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "end_time",
+            "docs": [
+              "提案投票结束时间戳"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "executed",
+            "docs": [
+              "提案是否已执行"
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "created_at",
+            "docs": [
+              "提案创建时间"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "approved_at",
+            "docs": [
+              "多签批准时间"
+            ],
+            "type": {
+              "option": "i64"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProposalApproved",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO 账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal",
+            "docs": [
+              "被批准的提案账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal_id",
+            "docs": [
+              "提案的ID"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "approver",
+            "docs": [
+              "本次操作的批准者"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "current_approvals",
+            "docs": [
+              "当前的批准总数"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "threshold",
+            "docs": [
+              "要求的阈值"
+            ],
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProposalCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO 账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal",
+            "docs": [
+              "新创建的提案账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal_id",
+            "docs": [
+              "提案的唯一ID"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "proposer",
+            "docs": [
+              "提案发起人"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal_type",
+            "docs": [
+              "提案的具体类型和内容"
+            ],
+            "type": {
+              "defined": {
+                "name": "ProposalType"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProposalExecuted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO 账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal",
+            "docs": [
+              "成功执行的提案账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal_id",
+            "docs": [
+              "提案的ID"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "proposal_type",
+            "docs": [
+              "被执行的具体提案类型和内容"
+            ],
+            "type": {
+              "defined": {
+                "name": "ProposalType"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProposalType",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "AddRecurringPayment",
+            "fields": [
+              {
+                "name": "recipient",
+                "type": "pubkey"
+              },
+              {
+                "name": "amount",
+                "type": "u64"
+              },
+              {
+                "name": "currency",
+                "type": {
+                  "defined": {
+                    "name": "CurrencyType"
+                  }
+                }
+              },
+              {
+                "name": "interval",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "UpdateDao",
+            "fields": [
+              {
+                "name": "action",
+                "type": {
+                  "defined": {
+                    "name": "DaoUpdateAction"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "name": "WithdrawTreasury",
+            "fields": [
+              {
+                "name": "amount",
+                "type": "u64"
+              },
+              {
+                "name": "recipient",
+                "type": "pubkey"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "RecurringPaymentAccount",
+      "docs": [
+        "定期支付 (4 + N * (32 + 8 + 1 + 8 + 8)) -> (32 recipient + 8 amount + 1 currency + 8 interval + 8 next_payment = 57)"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO State 账户地址"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "receiver",
+            "docs": [
+              "收款人地址"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "docs": [
+              "支付金额"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "currency",
+            "docs": [
+              "代币种类 (当前仅支持 SOL)"
+            ],
+            "type": {
+              "defined": {
+                "name": "CurrencyType"
+              }
+            }
+          },
+          {
+            "name": "interval_day",
+            "docs": [
+              "支付间隔（秒）"
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "next_claimable_timestamp",
+            "docs": [
+              "下一次可领取的时间戳"
+            ],
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakeAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "staker",
+            "docs": [
+              "质押者的公钥"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO State 账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "amount",
+            "docs": [
+              "质押的代币数量"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakeProposalCreated",
+      "docs": [
+        "当一个质押提案被创建时触发"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO 账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal",
+            "docs": [
+              "新创建的提案账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal_id",
+            "docs": [
+              "提案的唯一ID"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "proposer",
+            "docs": [
+              "提案发起人"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "title",
+            "docs": [
+              "提案标题"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "description",
+            "docs": [
+              "提案描述"
+            ],
+            "type": "string"
+          },
+          {
+            "name": "proposal_type",
+            "docs": [
+              "提案类型和内容"
+            ],
+            "type": {
+              "defined": {
+                "name": "ProposalType"
+              }
+            }
+          },
+          {
+            "name": "end_time",
+            "docs": [
+              "投票结束时间"
+            ],
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "StakeProposalExecuted",
+      "docs": [
+        "当一个质押提案被成功执行时触发"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO 账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal",
+            "docs": [
+              "成功执行的提案账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "proposal_id",
+            "docs": [
+              "提案的ID"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "proposal_type",
+            "docs": [
+              "被执行的具体提案类型和内容"
+            ],
+            "type": {
+              "defined": {
+                "name": "ProposalType"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokensStaked",
+      "docs": [
+        "用户成功质押代币事件"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO 账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_account",
+            "docs": [
+              "质押信息账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "staker",
+            "docs": [
+              "质押者"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "amount_staked",
+            "docs": [
+              "本次质押的数量"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "new_total_for_staker",
+            "docs": [
+              "该用户质押后的总数量"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "TokensUnstaked",
+      "docs": [
+        "用户成功赎回代币事件"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "dao_state",
+            "docs": [
+              "关联的 DAO 账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "stake_account",
+            "docs": [
+              "(已关闭的)质押信息账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "staker",
+            "docs": [
+              "赎回者"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "amount_unstaked",
+            "docs": [
+              "赎回的代币数量"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VoteCasted",
+      "docs": [
+        "当用户对质押提案进行投票时触发"
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal",
+            "docs": [
+              "关联的提案账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "voter",
+            "docs": [
+              "投票者"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "choice",
+            "docs": [
+              "投票选项 (Yes/No)"
+            ],
+            "type": {
+              "defined": {
+                "name": "VoteChoice"
+              }
+            }
+          },
+          {
+            "name": "weight",
+            "docs": [
+              "本次投票的权重 (质押数量)"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "new_yes_votes",
+            "docs": [
+              "更新后的总赞成票数"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "new_no_votes",
+            "docs": [
+              "更新后的总反对票数"
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "new_voter_count",
+            "docs": [
+              "更新后的总投票人数"
+            ],
+            "type": "u32"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VoteChoice",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Yes"
+          },
+          {
+            "name": "No"
+          }
+        ]
+      }
+    },
+    {
+      "name": "VoteRecord",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "proposal",
+            "docs": [
+              "关联的提案账户"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "voter",
+            "docs": [
+              "投票人"
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "weight",
+            "docs": [
+              "投票人的投票权重 (当时质押的数量)"
+            ],
+            "type": "u64"
+          }
+        ]
+      }
+    }
+  ]
+}
